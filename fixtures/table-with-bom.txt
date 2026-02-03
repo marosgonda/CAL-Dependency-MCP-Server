@@ -1,0 +1,19 @@
+﻿OBJECT Table 999 Test BOM
+{
+  FIELDS
+  {
+    { 1   ;   ;Code                ;Code10 }
+  }
+  KEYS
+  {
+    {    ;Code }
+  }
+  FIELDGROUPS
+  {
+  }
+  CODE
+  {
+    BEGIN
+    END.
+  }
+}
