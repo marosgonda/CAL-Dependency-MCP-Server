@@ -1,0 +1,33 @@
+OBJECT Table 999 Malformed Table
+{
+  OBJECT-PROPERTIES
+  {
+    Date=01.01.20;
+    Time=12:00:00;
+    Version List=TEST1.00;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=Malformed Table;SKY=Chybn� tabu�ka];
+  }
+  FIELDS
+  {
+    { 1   ;   ;Code                ;Code10        ;CaptionML=[ENU=Code;
+                                                              SKY=K�d];
+                                                   NotBlank=Yes }
+    { 2   ;   ;Description         ;Text50        ;CaptionML=[ENU=Description;
+                                                              SKY=Popis] }
+  }
+  KEYS
+  {
+    {    ;Code                                    ;Clustered=Yes }
+  }
+  CODE
+  {
+    PROCEDURE TestProcedure@1();
+    BEGIN
+      MESSAGE('This is a test');
+    END;
+
+    BEGIN
+    // Missing END. at the end - this is intentional for error handling tests

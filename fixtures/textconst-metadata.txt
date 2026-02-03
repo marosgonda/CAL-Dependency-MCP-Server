@@ -1,0 +1,38 @@
+OBJECT Codeunit 50001 TextConst Metadata Example
+{
+  OBJECT-PROPERTIES
+  {
+    Date=01.01.20;
+    Time=12:00:00;
+    Version List=TEST1.00;
+  }
+  PROPERTIES
+  {
+  }
+  CODE
+  {
+    VAR
+      SimpleText@1000 : TextConst 'ENU=Simple text;SKY=Jednoduch� text';
+      TextWithMetadata@1001 : TextConst '@@@=This is a comment for translators;ENU=Text with metadata;SKY=Text s metad�tami';
+      ComplexMetadata@1002 : TextConst '@@@=1 customer name 2 invoice number 3 amount;ENU=Invoice %1 for customer %2 with amount %3;SKY=Faktúra %1 pre z�kazn�ka %2 s �iastkou %3';
+      ErrorMessage@1003 : TextConst '@@@=Error message for validation;ENU=The value must be greater than zero;SKY=Hodnota mus� by� v��ia ako nula';
+
+    PROCEDURE GetSimpleText@1() : Text;
+    BEGIN
+      EXIT(SimpleText);
+    END;
+
+    PROCEDURE GetTextWithMetadata@2() : Text;
+    BEGIN
+      EXIT(TextWithMetadata);
+    END;
+
+    PROCEDURE GetComplexMetadata@3(CustomerName@1000 : Text;InvoiceNo@1001 : Text;Amount@1002 : Decimal) : Text;
+    BEGIN
+      EXIT(STRSUBSTNO(ComplexMetadata,InvoiceNo,CustomerName,Amount));
+    END;
+
+    BEGIN
+    END.
+  }
+}

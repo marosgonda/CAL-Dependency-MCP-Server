@@ -1,0 +1,65 @@
+OBJECT Report 50000 Sample Report
+{
+  OBJECT-PROPERTIES
+  {
+    Date=01.01.20;
+    Time=12:00:00;
+    Version List=TEST1.00;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=Sample Report;SKY=Vzorka Spr�va];
+    ProcessingOnly=No;
+    DefaultLayout=RDLC;
+    RDLCLayout='Sample Report.rdlc';
+  }
+  DATASET
+  {
+    { DATAITEM "Payment Terms";"Payment Terms"
+                {
+                  DataItemTableView=SORTING(Code);
+                  column(Code;Code)
+                  {
+                  }
+                  column(Description;Description)
+                  {
+                  }
+                  column(Due_Date_Calculation;"Due Date Calculation")
+                  {
+                  }
+                  column(Discount_Percent;"Discount %")
+                  {
+                  }
+                  trigger OnAfterGetRecord();
+                  BEGIN
+                    // Process record
+                  END;
+
+                }
+    }
+  }
+  REQUESTPAGE
+  {
+    PROPERTIES
+    {
+      OnOpenPage=BEGIN
+                   // Initialize request page
+                 END;
+
+    }
+    CONTROLS
+    {
+      { 1   ;0   ;Container ;
+                  ContainerType=ContentArea }
+      { 2   ;1   ;Group     ;
+                  Name=Options;
+                  GroupType=Group }
+    }
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}

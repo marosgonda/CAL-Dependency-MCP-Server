@@ -1,0 +1,122 @@
+OBJECT Table 4 Currency
+{
+  OBJECT-PROPERTIES
+  {
+    Date=01.04.15;
+    Time=[ 0:00:00];
+    Version List=NAVW110.0,NAVSK7.00,TLGP1.00;
+  }
+  PROPERTIES
+  {
+    Permissions=TableData 52019938=rd;
+    OnModify=BEGIN
+               "Last Date Modified" := TODAY;
+             END;
+
+    OnDelete=VAR
+               CustLedgEntry@1000 : Record 21;
+               VendLedgEntry@1001 : Record 25;
+             BEGIN
+               CustLedgEntry.SETRANGE(Open,TRUE);
+               CustLedgEntry.SETRANGE("Currency Code",Code);
+               IF NOT CustLedgEntry.ISEMPTY THEN
+                 ERROR(Text002,CustLedgEntry.TABLECAPTION,TABLECAPTION,Code);
+
+               VendLedgEntry.SETRANGE(Open,TRUE);
+               VendLedgEntry.SETRANGE("Currency Code",Code);
+               IF NOT VendLedgEntry.ISEMPTY THEN
+                 ERROR(Text002,VendLedgEntry.TABLECAPTION,TABLECAPTION,Code);
+
+               CurrExchRate.SETRANGE("Currency Code",Code);
+               CurrExchRate.DELETEALL;
+             END;
+
+    CaptionML=[ENU=Currency;
+               SKY=Mena];
+    LookupPageID=Page5;
+  }
+  FIELDS
+  {
+    { 1   ;   ;Code                ;Code10        ;OnValidate=BEGIN
+                                                                IF Symbol = '' THEN
+                                                                  Symbol := ResolveCurrencySymbol(Code);
+                                                              END;
+
+                                                   CaptionML=[ENU=Code;
+                                                              SKY=K�d];
+                                                   NotBlank=Yes }
+    { 2   ;   ;Last Date Modified  ;Date          ;CaptionML=[ENU=Last Date Modified;
+                                                              SKY=D�tum poslednej zmeny];
+                                                   Editable=No }
+    { 3   ;   ;Last Date Adjusted  ;Date          ;CaptionML=[ENU=Last Date Adjusted;
+                                                              SKY=D�tum poslednej adjust�cie];
+                                                   Editable=No }
+    { 24  ;   ;Cust. Ledg. Entries in Filter;Boolean;
+                                                   FieldClass=FlowField;
+                                                   CalcFormula=Exist("Cust. Ledger Entry" WHERE (Customer No.=FIELD(Customer Filter),
+                                                                                                 Currency Code=FIELD(Code)));
+                                                   CaptionML=[ENU=Cust. Ledg. Entries in Filter;
+                                                              SKY=Polo�ky z�kazn�ka vo filtri];
+                                                   Editable=No }
+    { 25  ;   ;Customer Balance    ;Decimal       ;FieldClass=FlowField;
+                                                   CalcFormula=Sum("Detailed Cust. Ledg. Entry".Amount WHERE (Customer No.=FIELD(Customer Filter),
+                                                                                                              Initial Entry Global Dim. 1=FIELD(Global Dimension 1 Filter),
+                                                                                                              Initial Entry Global Dim. 2=FIELD(Global Dimension 2 Filter),
+                                                                                                              Posting Date=FIELD(Date Filter),
+                                                                                                              Currency Code=FIELD(Code)));
+                                                   CaptionML=[ENU=Customer Balance;
+                                                              SKY=Saldo z�kazn�ka];
+                                                   Editable=No;
+                                                   AutoFormatType=1;
+                                                   AutoFormatExpr=Code }
+    { 56  ;   ;Symbol              ;Text10        ;CaptionML=[ENU=Symbol;
+                                                              SKY=Symbol] }
+  }
+  KEYS
+  {
+    {    ;Code                                    ;Clustered=Yes }
+  }
+  FIELDGROUPS
+  {
+    { 1   ;Brick               ;Code,Description                         }
+  }
+  CODE
+  {
+    VAR
+      Text000@1000 : TextConst 'ENU=must be rounded to the nearest %1;SKY=mus� by� zaokr�hlen� na najbli�� %1';
+      Text001@1001 : TextConst 'ENU=%1 must be rounded to the nearest %2.;SKY=%1 sa mus� zaokr�hli� na najbli��ie %2.';
+      CurrExchRate@1002 : Record 330;
+      GLSetup@1003 : Record 98;
+      Text002@1004 : TextConst '@@@=1 either customer or vendor ledger entry table 2 name co currency table 3 currencency code;ENU=There is one or more opened entries in the %1 table using %2 %3.;SKY=Existuje jedna alebo viac otvoren�ch polo�iek v tabu�ke %1, ktor� pou��vaj� %2 %3.';
+
+    PROCEDURE InitRoundingPrecision@2();
+    BEGIN
+      GLSetup.GET;
+      IF GLSetup."Amount Rounding Precision" <> 0 THEN
+        "Amount Rounding Precision" := GLSetup."Amount Rounding Precision"
+      ELSE
+        "Amount Rounding Precision" := 0.01;
+    END;
+
+    LOCAL PROCEDURE CheckGLAcc@1(AccNo@1000 : Code[20]);
+    VAR
+      GLAcc@1001 : Record 15;
+    BEGIN
+      IF AccNo <> '' THEN BEGIN
+        GLAcc.GET(AccNo);
+        GLAcc.CheckGLAcc;
+      END;
+    END;
+
+    PROCEDURE GetCurrencySymbol@8() : Text[10];
+    BEGIN
+      IF Symbol <> '' THEN
+        EXIT(Symbol);
+
+      EXIT(Code);
+    END;
+
+    BEGIN
+    END.
+  }
+}

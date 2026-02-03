@@ -1,0 +1,36 @@
+OBJECT MenuSuite 50000 Sample MenuSuite
+{
+  OBJECT-PROPERTIES
+  {
+    Date=01.01.20;
+    Time=12:00:00;
+    Version List=TEST1.00;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=Sample Menu;SKY=Vzorka Menu];
+  }
+  MENUITEMS
+  {
+    MENUITEM(Text=Payment Terms;
+             Action=Page 4;
+             RunObject=Page 4)
+    MENUITEM(Text=Currency;
+             Action=Page 5;
+             RunObject=Page 5)
+    MENUITEM(Text=Finance Charge Terms;
+             Action=Page 6;
+             RunObject=Page 6)
+    SEPARATOR
+    MENUITEM(Text=Setup;
+             IsFolder=Yes)
+    {
+      MENUITEM(Text=General Setup;
+               Action=Page 10;
+               RunObject=Page 10)
+      MENUITEM(Text=Company Information;
+               Action=Page 1;
+               RunObject=Page 1)
+    }
+  }
+}

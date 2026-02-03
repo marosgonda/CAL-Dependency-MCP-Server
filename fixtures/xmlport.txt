@@ -1,0 +1,41 @@
+OBJECT XMLport 50000 Sample XMLport
+{
+  OBJECT-PROPERTIES
+  {
+    Date=01.01.20;
+    Time=12:00:00;
+    Version List=TEST1.00;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=Sample XMLport;SKY=Vzorka XMLport];
+    Direction=Both;
+    Format=Xml;
+    DefaultLayout=XMLPORT;
+  }
+  ELEMENTS
+  {
+    { ELEMENT;Root;Element ;
+                SourceTable="Payment Terms";
+                XmlName='PaymentTerms';
+                MinOccurs=Zero;
+                MaxOccurs=Unbounded;
+                Temporary=No;
+                { ELEMENT;Code;Field ;
+                          SourceField="Payment Terms".Code;
+                          XmlName='Code' }
+                { ELEMENT;Description;Field ;
+                          SourceField="Payment Terms".Description;
+                          XmlName='Description' }
+                { ELEMENT;DueDate;Field ;
+                          SourceField="Payment Terms"."Due Date Calculation";
+                          XmlName='DueDate' }
+    }
+  }
+  CODE
+  {
+
+    BEGIN
+    END.
+  }
+}
