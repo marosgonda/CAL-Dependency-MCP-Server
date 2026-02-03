@@ -1,5 +1,6 @@
 # CAL Dependency MCP Server
 
+[![npm version](https://img.shields.io/npm/v/cal-dependency-mcp-server.svg)](https://www.npmjs.com/package/cal-dependency-mcp-server)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Tests](https://img.shields.io/badge/tests-290%20passing-brightgreen.svg)](#development)
 
@@ -25,12 +26,19 @@ A Model Context Protocol (MCP) server for analyzing **C/AL (Microsoft Dynamics N
 - Query
 - MenuSuite
 
-## Prerequisites
-
-- [Bun](https://bun.sh/) >= 1.0.0 (recommended) or [Node.js](https://nodejs.org/) v18+
-- C/AL objects exported as `.txt` files from Dynamics NAV
-
 ## Installation
+
+### Option 1: Install from npm (Recommended)
+
+```bash
+# Global installation
+npm install -g cal-dependency-mcp-server
+
+# Or with Bun
+bun install -g cal-dependency-mcp-server
+```
+
+### Option 2: Install from source
 
 ```bash
 # Clone the repository
@@ -50,7 +58,18 @@ bun run build
 
 Add to your `claude_desktop_config.json`:
 
-**Windows:**
+**If installed globally via npm:**
+```json
+{
+  "mcpServers": {
+    "cal-analyzer": {
+      "command": "cal-mcp-server"
+    }
+  }
+}
+```
+
+**If installed from source (Windows):**
 ```json
 {
   "mcpServers": {
@@ -62,7 +81,7 @@ Add to your `claude_desktop_config.json`:
 }
 ```
 
-**macOS/Linux:**
+**If installed from source (macOS/Linux):**
 ```json
 {
   "mcpServers": {
@@ -78,6 +97,8 @@ Add to your `claude_desktop_config.json`:
 
 Use stdio transport with command:
 ```bash
+cal-mcp-server
+# or
 bun run /path/to/dist/index.js
 ```
 
@@ -195,6 +216,9 @@ Directions: `incoming`, `outgoing`, `both`
 ## Development
 
 ```bash
+# Install dependencies
+bun install
+
 # Run tests
 bun test
 
@@ -203,6 +227,9 @@ bun test --watch
 
 # Type check
 bun run type-check
+
+# Build
+bun run build
 
 # Development mode (auto-rebuild)
 bun run dev
@@ -228,6 +255,16 @@ src/
 - **290 tests** passing
 - **923 assertions**
 - All parsers, database, reference extraction, and MCP tools covered
+
+## Publishing
+
+```bash
+# Login to npm
+npm login
+
+# Publish
+npm publish
+```
 
 ## License
 

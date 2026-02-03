@@ -1,25 +1,59 @@
 {
   "name": "cal-dependency-mcp-server",
   "version": "0.1.0",
-  "description": "MCP server for analyzing CAL (Business Central AL) code dependencies",
+  "description": "MCP server for analyzing C/AL (Microsoft Dynamics NAV 2009-2018) code - search objects, track dependencies, and explore symbol information",
   "type": "module",
   "main": "dist/index.js",
+  "bin": {
+    "cal-mcp-server": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
     "test": "bun test",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "prepublishOnly": "bun run build"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "dynamics-nav",
+    "cal",
+    "c-al",
+    "navision",
+    "business-central",
+    "code-analysis",
+    "dependency-analysis",
+    "ai-assistant",
+    "claude",
+    "llm"
+  ],
+  "author": "marosgonda",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marosgonda/CAL-Dependency-MCP-Server.git"
+  },
+  "homepage": "https://github.com/marosgonda/CAL-Dependency-MCP-Server#readme",
+  "bugs": {
+    "url": "https://github.com/marosgonda/CAL-Dependency-MCP-Server/issues"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^0.5.0",
-    "stream-json": "^1.8.0",
     "fast-glob": "^3.3.2"
   },
   "devDependencies": {
-    "typescript": "^5.3.3",
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.3"
   },
   "engines": {
+    "node": ">=18.0.0",
     "bun": ">=1.0.0"
   }
 }
