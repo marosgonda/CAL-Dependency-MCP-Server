@@ -653,7 +653,7 @@ Critical Path: Task 1 → Task 4 → Task 5 → Task 9 → Task 12
 
 ### Wave 3: Database & Loading
 
-- [ ] 9. Symbol Database with Indices
+- [x] 9. Symbol Database with Indices
 
   **What to do**:
   - Create `src/core/symbol-database.ts`
@@ -714,7 +714,7 @@ Critical Path: Task 1 → Task 4 → Task 5 → Task 9 → Task 12
 
 ---
 
-- [ ] 10. Reference Extractor
+- [x] 10. Reference Extractor
 
   **What to do**:
   - Create `src/core/reference-extractor.ts`
@@ -773,7 +773,7 @@ Critical Path: Task 1 → Task 4 → Task 5 → Task 9 → Task 12
 
 ---
 
-- [ ] 11. Streaming File Loader
+- [x] 11. Streaming File Loader
 
   **What to do**:
   - Create `src/core/file-loader.ts`
@@ -834,7 +834,7 @@ Critical Path: Task 1 → Task 4 → Task 5 → Task 9 → Task 12
 
 ### Wave 4: MCP Tools & Integration
 
-- [ ] 12. Core MCP Tools (search, definition, references, members, summary, files)
+- [x] 12. Core MCP Tools (search, definition, references, members, summary, files)
 
   **What to do**:
   - Create `src/tools/mcp-tools.ts`
@@ -894,7 +894,7 @@ Critical Path: Task 1 → Task 4 → Task 5 → Task 9 → Task 12
 
 ---
 
-- [ ] 13. Extended MCP Tools (code search, dependencies, relations)
+- [x] 13. Extended MCP Tools (code search, dependencies, relations)
 
   **What to do**:
   - Add 3 extended tools to `src/tools/mcp-tools.ts`:
@@ -953,7 +953,7 @@ Critical Path: Task 1 → Task 4 → Task 5 → Task 9 → Task 12
 
 ---
 
-- [ ] 14. Integration & Performance Testing
+- [x] 14. Integration & Performance Testing
 
   **What to do**:
   - Create `src/__tests__/integration.test.ts`
