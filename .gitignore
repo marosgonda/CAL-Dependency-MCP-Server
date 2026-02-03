@@ -38,3 +38,6 @@ coverage/
 
 # Large test data files
 all_objects_example.txt
+
+# Sisyphus planning files
+.sisyphus/
