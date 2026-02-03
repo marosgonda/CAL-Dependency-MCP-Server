@@ -1,6 +1,5 @@
 # CAL Dependency MCP Server
 
-[![npm version](https://img.shields.io/npm/v/cal-dependency-mcp-server.svg)](https://www.npmjs.com/package/cal-dependency-mcp-server)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Tests](https://img.shields.io/badge/tests-290%20passing-brightgreen.svg)](#development)
 
@@ -28,18 +27,6 @@ A Model Context Protocol (MCP) server for analyzing **C/AL (Microsoft Dynamics N
 
 ## Installation
 
-### Option 1: Install from npm (Recommended)
-
-```bash
-# Global installation
-npm install -g cal-dependency-mcp-server
-
-# Or with Bun
-bun install -g cal-dependency-mcp-server
-```
-
-### Option 2: Install from source
-
 ```bash
 # Clone the repository
 git clone https://github.com/marosgonda/CAL-Dependency-MCP-Server.git
@@ -58,18 +45,7 @@ bun run build
 
 Add to your `claude_desktop_config.json`:
 
-**If installed globally via npm:**
-```json
-{
-  "mcpServers": {
-    "cal-analyzer": {
-      "command": "cal-mcp-server"
-    }
-  }
-}
-```
-
-**If installed from source (Windows):**
+**Windows:**
 ```json
 {
   "mcpServers": {
@@ -81,7 +57,7 @@ Add to your `claude_desktop_config.json`:
 }
 ```
 
-**If installed from source (macOS/Linux):**
+**macOS/Linux:**
 ```json
 {
   "mcpServers": {
@@ -97,8 +73,6 @@ Add to your `claude_desktop_config.json`:
 
 Use stdio transport with command:
 ```bash
-cal-mcp-server
-# or
 bun run /path/to/dist/index.js
 ```
 
@@ -255,16 +229,6 @@ src/
 - **290 tests** passing
 - **923 assertions**
 - All parsers, database, reference extraction, and MCP tools covered
-
-## Publishing
-
-```bash
-# Login to npm
-npm login
-
-# Publish
-npm publish
-```
 
 ## License
 
