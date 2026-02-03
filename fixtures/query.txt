@@ -1,0 +1,36 @@
+OBJECT Query 50000 Sample Query
+{
+  OBJECT-PROPERTIES
+  {
+    Date=01.01.20;
+    Time=12:00:00;
+    Version List=TEST1.00;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=Sample Query;SKY=Vzorka Dotaz];
+  }
+  ELEMENTS
+  {
+    { DATAITEM "Payment Terms";"Payment Terms"
+                {
+                  DataItemReference="Payment Terms";
+                  column(Code;Code)
+                  {
+                  }
+                  column(Description;Description)
+                  {
+                  }
+                  column(DueDateCalculation;"Due Date Calculation")
+                  {
+                  }
+                  column(DiscountPercent;"Discount %")
+                  {
+                  }
+                  column(DiscountDateCalculation;"Discount Date Calculation")
+                  {
+                  }
+                }
+    }
+  }
+}

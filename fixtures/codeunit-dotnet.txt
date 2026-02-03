@@ -1,0 +1,38 @@
+OBJECT Codeunit 50000 DotNet Example
+{
+  OBJECT-PROPERTIES
+  {
+    Date=01.01.20;
+    Time=12:00:00;
+    Version List=TEST1.00;
+  }
+  PROPERTIES
+  {
+    OnRun=BEGIN
+            TestDotNetVariables;
+          END;
+
+  }
+  CODE
+  {
+    VAR
+      DotNetString@1000 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.String";
+      DotNetList@1001 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Collections.Generic.List`1";
+      DotNetDateTime@1002 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.DateTime";
+      DotNetException@1003 : DotNet "'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'.System.Exception";
+
+    PROCEDURE TestDotNetVariables@1();
+    BEGIN
+      // Test procedure using DotNet variables
+      MESSAGE('DotNet variables initialized');
+    END;
+
+    PROCEDURE ProcessString@2(InputString@1000 : Text) : Text;
+    BEGIN
+      EXIT(InputString);
+    END;
+
+    BEGIN
+    END.
+  }
+}

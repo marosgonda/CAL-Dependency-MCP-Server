@@ -1,0 +1,50 @@
+OBJECT Page 100 Nested Controls Example
+{
+  OBJECT-PROPERTIES
+  {
+    Date=01.01.20;
+    Time=12:00:00;
+    Version List=TEST1.00;
+  }
+  PROPERTIES
+  {
+    CaptionML=[ENU=Nested Controls;SKY=Vnorenk� ovl�dacie prvky];
+    PageType=Card;
+    SourceTable=Table3;
+  }
+  CONTROLS
+  {
+    { 1   ;0   ;Container ;
+                ContainerType=ContentArea }
+    { 2   ;1   ;Group     ;
+                Name=MainGroup;
+                GroupType=Group }
+    { 3   ;2   ;Field     ;
+                SourceExpr=Code }
+    { 4   ;2   ;Group     ;
+                Name=NestedGroup1;
+                GroupType=Group }
+    { 5   ;3   ;Field     ;
+                SourceExpr=Description }
+    { 6   ;3   ;Group     ;
+                Name=NestedGroup2;
+                GroupType=Group }
+    { 7   ;4   ;Field     ;
+                SourceExpr="Due Date Calculation" }
+    { 8   ;4   ;Group     ;
+                Name=NestedGroup3;
+                GroupType=Group }
+    { 9   ;5   ;Field     ;
+                SourceExpr="Discount %" }
+    { 10  ;5   ;Group     ;
+                Name=NestedGroup4;
+                GroupType=Group }
+    { 11  ;6   ;Field     ;
+                SourceExpr="Discount Date Calculation" }
+  }
+  CODE
+  {
+    BEGIN
+    END.
+  }
+}
