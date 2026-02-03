@@ -13,7 +13,6 @@ import {
   CALCodeunit,
   CALReport,
   CALXMLport,
-  CALQuery,
 } from '../types/cal-types';
 
 /**
