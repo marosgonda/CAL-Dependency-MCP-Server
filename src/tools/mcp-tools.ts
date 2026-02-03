@@ -6,7 +6,7 @@
 import { SymbolDatabase } from '../core/symbol-database';
 import { extractReferences, CALReference } from '../core/reference-extractor';
 import { loadFile, loadDirectory, LoadResult } from '../core/file-loader';
-import { CALObject, CALObjectType, CALField, CALProcedure } from '../types/cal-types';
+import { CALObject, CALObjectType, CALField, CALProcedure, CALTable, CALPage } from '../types/cal-types';
 import { existsSync, statSync } from 'fs';
 
 /**
@@ -582,9 +582,285 @@ export async function manageFiles(params: ManageFilesParams): Promise<ManageFile
       return {
         success: false,
         error: `Invalid action: ${action}`
-      };
+    };
   }
 }
+
+// ============================================
+// EXTENDED MCP TOOLS (Task 13)
+// ============================================
+
+export interface CodeSearchResult {
+  objectType: string;
+  objectId: number;
+  objectName: string;
+  procedureName: string;
+  match: string;
+  lineNumber: number;
+}
+
+export interface CodeSearchParams {
+  pattern: string;
+  objectType?: string;
+  limit?: number;
+}
+
+export function searchCode(db: SymbolDatabase, params: CodeSearchParams): CodeSearchResult[] {
+  const { pattern, objectType, limit = 20 } = params;
+  const results: CodeSearchResult[] = [];
+  const regex = new RegExp(pattern, 'gi');
+
+  const objects = objectType
+    ? db.getObjectsByType(objectType as CALObjectType)
+    : [
+        ...db.getObjectsByType(CALObjectType.Table),
+        ...db.getObjectsByType(CALObjectType.Codeunit),
+        ...db.getObjectsByType(CALObjectType.Page),
+        ...db.getObjectsByType(CALObjectType.Report),
+      ];
+
+  for (const obj of objects) {
+    if (results.length >= limit) break;
+    const procedures = db.getProceduresByObject(obj.type, obj.id);
+    for (const proc of procedures) {
+      if (results.length >= limit) break;
+      if (!proc.body) continue;
+      const lines = proc.body.split('\n');
+      for (let i = 0; i < lines.length; i++) {
+        if (results.length >= limit) break;
+        const line = lines[i];
+        if (regex.test(line)) {
+          results.push({
+            objectType: obj.type,
+            objectId: obj.id,
+            objectName: obj.name,
+            procedureName: proc.name,
+            match: line.trim(),
+            lineNumber: i + 1,
+          });
+          regex.lastIndex = 0;
+        }
+      }
+    }
+  }
+  return results;
+}
+
+export interface DependencyParams {
+  objectType: string;
+  objectId: number;
+  direction?: 'incoming' | 'outgoing' | 'both';
+}
+
+export interface DependencyGraph {
+  incoming: CALReference[];
+  outgoing: CALReference[];
+}
+
+export function getDependencies(db: SymbolDatabase, params: DependencyParams): DependencyGraph {
+  const { objectType, objectId, direction = 'both' } = params;
+  const result: DependencyGraph = { incoming: [], outgoing: [] };
+  const allRefs = FileRegistry.getReferences();
+  const targetObj = db.getObject(objectType as CALObjectType, objectId);
+  const targetName = targetObj?.name || '';
+
+  if (direction === 'incoming' || direction === 'both') {
+    result.incoming = allRefs.filter(ref => {
+      return (ref.targetId === objectId && ref.targetType === 'Table') ||
+        ref.targetName.toLowerCase() === targetName.toLowerCase();
+    });
+    
+    // Also check database objects for table relations and source table references
+    const allObjects = [
+      ...db.getObjectsByType(CALObjectType.Table),
+      ...db.getObjectsByType(CALObjectType.Page),
+      ...db.getObjectsByType(CALObjectType.Codeunit),
+      ...db.getObjectsByType(CALObjectType.Report),
+    ];
+    
+    for (const obj of allObjects) {
+      if (obj.type === CALObjectType.Table) {
+        const table = obj as CALTable;
+        for (const field of table.fields || []) {
+           for (const prop of field.properties || []) {
+             if (prop.name === 'TableRelation' && typeof prop.value === 'string' && prop.value?.toLowerCase().includes(targetName.toLowerCase())) {
+              const ref: CALReference = {
+                sourceType: CALObjectType.Table,
+                sourceId: table.id,
+                sourceName: table.name,
+                sourceLocation: `Field:${field.name}`,
+                targetType: 'Table',
+                targetId: objectId,
+                targetName: targetName,
+                referenceType: 'TableRelation',
+              };
+              if (!result.incoming.some(r => r.sourceId === ref.sourceId && r.targetId === ref.targetId)) {
+                result.incoming.push(ref);
+              }
+            }
+          }
+        }
+      } else if (obj.type === CALObjectType.Page) {
+        const page = obj as CALPage;
+        if (page.sourceTable === objectId) {
+          const ref: CALReference = {
+            sourceType: CALObjectType.Page,
+            sourceId: page.id,
+            sourceName: page.name,
+            sourceLocation: 'SourceTable',
+            targetType: 'Table',
+            targetId: objectId,
+            targetName: targetName,
+            referenceType: 'SourceTable',
+          };
+          if (!result.incoming.some(r => r.sourceId === ref.sourceId && r.targetId === ref.targetId)) {
+            result.incoming.push(ref);
+          }
+        }
+      }
+    }
+  }
+
+  if (direction === 'outgoing' || direction === 'both') {
+    result.outgoing = allRefs.filter(ref => {
+      return ref.sourceType === objectType && ref.sourceId === objectId;
+    });
+    
+    // Also check database objects for outgoing references
+    const sourceObj = db.getObject(objectType as CALObjectType, objectId);
+    if (sourceObj && sourceObj.type === CALObjectType.Table) {
+      const table = sourceObj as CALTable;
+      for (const field of table.fields || []) {
+        for (const prop of field.properties || []) {
+          if (prop.name === 'TableRelation' && typeof prop.value === 'string' && prop.value) {
+            // Extract table name from TableRelation
+            // Format: "Table Name" or Table.Field or "Table Name" WHERE ...
+            let targetTableName = '';
+            const quotedMatch = prop.value.match(/^"([^"]+)"/);
+            if (quotedMatch) {
+              targetTableName = quotedMatch[1].trim();
+            } else {
+              targetTableName = prop.value.split('.')[0].split(' ')[0].trim();
+            }
+            
+            const targetTable = db.getObject(CALObjectType.Table, targetTableName);
+            if (targetTable) {
+              const ref: CALReference = {
+                sourceType: CALObjectType.Table,
+                sourceId: table.id,
+                sourceName: table.name,
+                sourceLocation: `Field:${field.name}`,
+                targetType: 'Table',
+                targetId: targetTable.id,
+                targetName: targetTable.name,
+                referenceType: 'TableRelation',
+              };
+              if (!result.outgoing.some(r => r.sourceId === ref.sourceId && r.targetId === ref.targetId)) {
+                result.outgoing.push(ref);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return result;
+}
+
+export interface TableRelationsParams {
+  tableId?: number;
+  includeCalcFormula?: boolean;
+}
+
+export function getTableRelations(db: SymbolDatabase, params: TableRelationsParams): CALReference[] {
+  const { tableId, includeCalcFormula = false } = params;
+  const allRefs = FileRegistry.getReferences();
+  const results: CALReference[] = [];
+  
+  // Get references from FileRegistry
+  let filtered = allRefs.filter(ref => {
+    if (includeCalcFormula) {
+      return ref.referenceType === 'TableRelation' || ref.referenceType === 'CalcFormula';
+    }
+    return ref.referenceType === 'TableRelation';
+  });
+
+  if (tableId !== undefined) {
+    filtered = filtered.filter(ref => 
+      ref.sourceType === CALObjectType.Table && ref.sourceId === tableId
+    );
+  }
+  
+  results.push(...filtered);
+  
+  // Also extract from database objects
+  const tables = db.getObjectsByType(CALObjectType.Table) as CALTable[];
+  for (const table of tables) {
+    if (tableId !== undefined && table.id !== tableId) continue;
+    
+    for (const field of table.fields || []) {
+      for (const prop of field.properties || []) {
+        if (prop.name === 'TableRelation' && typeof prop.value === 'string' && prop.value) {
+          // Extract table name from TableRelation
+          // Format: "Table Name" or Table.Field or "Table Name" WHERE ...
+          let targetTableName = '';
+          const quotedMatch = prop.value.match(/^"([^"]+)"/);
+          if (quotedMatch) {
+            targetTableName = quotedMatch[1].trim();
+          } else {
+            targetTableName = prop.value.split('.')[0].split(' ')[0].trim();
+          }
+          
+          const targetTable = db.getObject(CALObjectType.Table, targetTableName);
+          if (targetTable) {
+            const ref: CALReference = {
+              sourceType: CALObjectType.Table,
+              sourceId: table.id,
+              sourceName: table.name,
+              sourceLocation: `Field:${field.name}`,
+              targetType: 'Table',
+              targetId: targetTable.id,
+              targetName: targetTable.name,
+              referenceType: 'TableRelation',
+            };
+            if (!results.some(r => r.sourceId === ref.sourceId && r.targetId === ref.targetId)) {
+              results.push(ref);
+            }
+          }
+        }
+      }
+      
+      if (includeCalcFormula && field.calcFormula) {
+        // Parse CalcFormula to extract table reference
+        // Format: Sum("Table Name".Field WHERE ...)
+        const calcFormulaMatch = field.calcFormula.match(/(?:Sum|Count|Min|Max|Avg)\s*\(\s*"([^"]+)"/);
+        if (calcFormulaMatch) {
+          const targetTableName = calcFormulaMatch[1].trim();
+          const targetTable = db.getObject(CALObjectType.Table, targetTableName);
+          if (targetTable) {
+            const ref: CALReference = {
+              sourceType: CALObjectType.Table,
+              sourceId: table.id,
+              sourceName: table.name,
+              sourceLocation: `Field:${field.name}`,
+              targetType: 'Table',
+              targetId: targetTable.id,
+              targetName: targetTable.name,
+              referenceType: 'CalcFormula',
+            };
+            if (!results.some(r => r.sourceId === ref.sourceId && r.targetId === ref.targetId && r.referenceType === 'CalcFormula')) {
+              results.push(ref);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return results;
+}
+
 
 /**
  * Helper: Load files from path
