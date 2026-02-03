@@ -15,6 +15,10 @@ import {
   searchObjectMembers,
   getObjectSummary,
   manageFiles,
+  searchCode,
+  getDependencies,
+  getTableRelations,
+  FileRegistry,
 } from "./tools/mcp-tools.js";
 
 /**
@@ -176,30 +180,91 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ["objectName"],
         },
       },
-      {
-        name: "cal_files",
-        description: "Manage CAL file loading: load files, list loaded files, or get statistics",
-        inputSchema: {
-          type: "object" as const,
-          properties: {
-            action: {
-              type: "string",
-              description: "Action to perform (load, list, stats)",
-            },
-            path: {
-              type: "string",
-              description: "File or directory path (required for 'load' action)",
-            },
-            autoDiscover: {
-              type: "boolean",
-              description: "Auto-discover .txt files in directory (default: true)",
-            },
-          },
-          required: ["action"],
-        },
-      },
-    ],
-  };
+       {
+         name: "cal_files",
+         description: "Manage CAL file loading: load files, list loaded files, or get statistics",
+         inputSchema: {
+           type: "object" as const,
+           properties: {
+             action: {
+               type: "string",
+               description: "Action to perform (load, list, stats)",
+             },
+             path: {
+               type: "string",
+               description: "File or directory path (required for 'load' action)",
+             },
+             autoDiscover: {
+               type: "boolean",
+               description: "Auto-discover .txt files in directory (default: true)",
+             },
+           },
+           required: ["action"],
+         },
+       },
+       {
+         name: "cal_search_code",
+         description: "Search in procedure bodies using regex patterns",
+         inputSchema: {
+           type: "object" as const,
+           properties: {
+             pattern: {
+               type: "string",
+               description: "Regex pattern to search for (e.g., 'ERROR\\(.*\\)')",
+             },
+             objectType: {
+               type: "string",
+               description: "Filter by object type (Table, Page, Codeunit, Report, etc.)",
+             },
+             limit: {
+               type: "number",
+               description: "Maximum number of results to return (default: 20)",
+             },
+           },
+           required: ["pattern"],
+         },
+       },
+       {
+         name: "cal_get_dependencies",
+         description: "Get dependency graph for a CAL object (incoming/outgoing references)",
+         inputSchema: {
+           type: "object" as const,
+           properties: {
+             objectType: {
+               type: "string",
+               description: "Object type (Table, Page, Codeunit, Report, etc.)",
+             },
+             objectId: {
+               type: "number",
+               description: "Object ID to analyze",
+             },
+             direction: {
+               type: "string",
+               description: "Direction of dependencies: 'incoming', 'outgoing', or 'both' (default: 'both')",
+             },
+           },
+           required: ["objectType", "objectId"],
+         },
+       },
+       {
+         name: "cal_get_table_relations",
+         description: "Map table relationships including TableRelation and CalcFormula links",
+         inputSchema: {
+           type: "object" as const,
+           properties: {
+             tableId: {
+               type: "number",
+               description: "Table ID to analyze (optional, returns all if not specified)",
+             },
+             includeCalcFormula: {
+               type: "boolean",
+               description: "Include CalcFormula references in addition to TableRelation (default: false)",
+             },
+           },
+         },
+       },
+     ],
+   };
 });
 
 /**
@@ -271,19 +336,58 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
       }
 
-      case "cal_files": {
-        const result = await manageFiles(args as any);
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-        };
-      }
+       case "cal_files": {
+         const result = await manageFiles(args as any);
+         return {
+           content: [
+             {
+               type: "text",
+               text: JSON.stringify(result, null, 2),
+             },
+           ],
+         };
+       }
 
-      default:
+       case "cal_search_code": {
+         const db = FileRegistry.getDatabase();
+         const result = searchCode(db, args as any);
+         return {
+           content: [
+             {
+               type: "text",
+               text: JSON.stringify(result, null, 2),
+             },
+           ],
+         };
+       }
+
+       case "cal_get_dependencies": {
+         const db = FileRegistry.getDatabase();
+         const result = getDependencies(db, args as any);
+         return {
+           content: [
+             {
+               type: "text",
+               text: JSON.stringify(result, null, 2),
+             },
+           ],
+         };
+       }
+
+       case "cal_get_table_relations": {
+         const db = FileRegistry.getDatabase();
+         const result = getTableRelations(db, args as any);
+         return {
+           content: [
+             {
+               type: "text",
+               text: JSON.stringify(result, null, 2),
+             },
+           ],
+         };
+       }
+
+       default:
         return {
           content: [
             {
