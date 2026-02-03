@@ -35,3 +35,6 @@ coverage/
 # Temporary files
 *.tmp
 .cache/
+
+# Large test data files
+all_objects_example.txt
